@@ -11,25 +11,30 @@ import (
 // source - structure pointer or structure which we take fields from
 // target - structure we move fields to
 func Transform(source, target interface{}) error {
-	typeDescriptor := reflect.TypeOf(source)
-	valueDescriptor := reflect.ValueOf(source)
-	if valueDescriptor.Kind() == reflect.Ptr {
-		valueDescriptor = valueDescriptor.Elem()
-		typeDescriptor = typeDescriptor.Elem()
+	sourceTypeDescriptor := reflect.TypeOf(source)
+	sourceValueDescriptor := reflect.ValueOf(source)
+	if sourceValueDescriptor.Kind() == reflect.Ptr {
+		sourceValueDescriptor = sourceValueDescriptor.Elem()
+		sourceTypeDescriptor = sourceTypeDescriptor.Elem()
 	}
 
-	targetValue := reflect.ValueOf(target)
-	if targetValue.Kind() != reflect.Ptr {
+	targetValueDescriptor := reflect.ValueOf(target)
+	if targetValueDescriptor.Kind() != reflect.Ptr {
 		return errors.New("target should be pointer")
 	}
-	targetValue = targetValue.Elem()
-	for i := 0; i< typeDescriptor.NumField(); i++ {
-		fieldType := typeDescriptor.Field(i)
-		fieldValue := valueDescriptor.Field(i)
-
-		targetField := targetValue.FieldByName(fieldType.Name)
-		if targetField.Kind() == fieldValue.Kind() {
-			targetField.Set(fieldValue)
+	targetDescriptor := reflect.TypeOf(target).Elem()
+	targetValueDescriptor = targetValueDescriptor.Elem()
+	var name string
+	for i := 0; i< targetDescriptor.NumField(); i++ {
+		fieldValue := targetDescriptor.Field(i)
+		if value, found := fieldValue.Tag.Lookup("fromField"); found {
+			name = value
+		} else {
+			name = targetDescriptor.Field(i).Name
+		}
+		sourceField := sourceValueDescriptor.FieldByName(name)
+		if sourceField.Kind() == targetValueDescriptor.Field(i).Kind() {
+			targetValueDescriptor.Field(i).Set(sourceField)
 		}
 	}
 
