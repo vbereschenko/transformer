@@ -106,3 +106,18 @@ func TestTransform_Invalid(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestTransform_UnderlyingTypes(t *testing.T) {
+	type unixTime uint64
+	source := struct {
+		Time unixTime
+	}{}
+	target := struct {
+		Time uint64
+	}{}
+
+	err := Transform(source, &target)
+	if err != nil {
+		t.Fatalf("error converting aliases: %e", err)
+	}
+}

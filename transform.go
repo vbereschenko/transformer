@@ -34,7 +34,7 @@ func Transform(source, target interface{}) error {
 		}
 		sourceField := sourceValueDescriptor.FieldByName(name)
 		if sourceField.Kind() == targetValueDescriptor.Field(i).Kind() {
-			targetValueDescriptor.Field(i).Set(sourceField)
+			targetValueDescriptor.Field(i).Set(sourceField.Convert(targetValueDescriptor.Field(i).Type()))
 		}
 	}
 
